@@ -13,4 +13,5 @@ public class App {
         Javalin app = getApp();
         app.start(7070);
     }
+    //Подъем с properdonom
 }
