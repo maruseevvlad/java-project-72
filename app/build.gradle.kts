@@ -4,7 +4,7 @@ plugins {
     id("java")
     id("checkstyle")
     id("io.freefair.lombok") version "8.13.1"
-    id("org.sonarqube") version "6.0.1.5171"
+    id("org.sonarqube") version "6.3.1.5724"
 }
 
 group = "hexlet.code"
@@ -22,6 +22,8 @@ dependencies {
     implementation("info.picocli:picocli:4.7.6")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.2")
+    implementation("io.javalin:javalin:6.7.0")
+    implementation("org.slf4j:slf4j-simple:2.0.17")
 }
 
 checkstyle {
