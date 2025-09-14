@@ -19,6 +19,8 @@ public class App {
     }
 
     public static Javalin getApp() {
+        DbInitializer.init();
+
         return Javalin.create(config -> {
                     config.bundledPlugins.enableDevLogging();
                     config.fileRenderer(new JavalinJte(createTemplateEngine()));
