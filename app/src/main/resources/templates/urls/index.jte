@@ -1,4 +1,7 @@
-@param String name
+@import java.util.List
+@import hexlet.code.Url
+
+@param List<Url> urls
 
 <!doctype html>
 <html lang="en">
@@ -12,15 +15,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 </head>
 <body class="container mt-5">
-<h1 class="mb-4">Сохранение адреса</h1>
+<h1 class="mb-4">Добавленные адреса</h1>
 
-<form action="/urls" method="post" class="mb-3">
-    <div class="mb-3">
-        <label for="urlInput" class="form-label">Введите адрес</label>
-        <input type="text" class="form-control" id="urlInput" name="url" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Сохранить</button>
-</form>
+
+<ul>
+    @for(Url url : urls)
+        <li>${url.getName()}</li>
+    @endfor
+</ul>
+
+<a href="/">Назад</a>
 
 </body>
 </html>

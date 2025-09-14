@@ -11,6 +11,10 @@ public class UrlRepository extends BaseRepository {
         super(DataSourceProvider.getDataSource());
     }
 
+    public UrlRepository(DataSource dataSource) {
+        super(dataSource);
+    }
+
     public void save(Url url) throws SQLException {
         String sql = "INSERT INTO urls (name, created_at) VALUES (?, ?)";
         try (Connection connection = dataSource.getConnection();
@@ -53,6 +57,42 @@ public class UrlRepository extends BaseRepository {
             }
         }
         return urls;
+    }
+
+    public Url findById(Long id) {
+        String sql = "SELECT * FROM urls WHERE id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             var stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            var rs = stmt.executeQuery();
+            if (rs.next()) {
+                Url url = new Url();
+                url.setId(rs.getLong("id"));
+                url.setName(rs.getString("name"));
+                url.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                return url;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    public boolean existsByName(String name) {
+        String sql = "SELECT 1 FROM urls WHERE name = ? LIMIT 1";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, name);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
