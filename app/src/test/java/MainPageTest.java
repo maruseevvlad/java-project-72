@@ -2,7 +2,6 @@ import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
 import hexlet.code.App;
 import io.javalin.Javalin;
-import io.javalin.http.ContentType;
 import io.javalin.rendering.template.JavalinJte;
 import io.javalin.testtools.JavalinTest;
 import okhttp3.Response;
