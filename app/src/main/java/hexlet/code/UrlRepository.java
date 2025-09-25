@@ -22,7 +22,7 @@ public class UrlRepository extends BaseRepository {
 
             stmt.setString(1, url.getName());
             LocalDateTime createdAt = url.getCreatedAt();
-            if (createdAt != null) {
+            if (createdAt == null) {
                 createdAt = LocalDateTime.now();
                 url.setCreatedAt(createdAt);
             }

@@ -21,7 +21,7 @@ public class MainPageTest {
 
     @Test
     public void testRootHandler() throws Exception {
-        Javalin app = Javalin.create(config -> {
+        Javalin app = Javalin.create(config -> { // Вынести в отдельный класс, либо beforeAll
             config.fileRenderer(new JavalinJte(createTemplateEngine()));
         });
         app.get("/", ctx -> ctx.render("index.jte"));

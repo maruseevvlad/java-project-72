@@ -8,9 +8,13 @@ import io.javalin.rendering.template.JavalinJte;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 public class App {
+
+    // Один экземпляр репозитория на всё приложение
+    private static final UrlRepository urlRepository = new UrlRepository(DataSourceProvider.getDataSource());
 
     private static TemplateEngine createTemplateEngine() {
         ClassLoader classLoader = App.class.getClassLoader();
@@ -25,12 +29,17 @@ public class App {
                     config.bundledPlugins.enableDevLogging();
                     config.fileRenderer(new JavalinJte(createTemplateEngine()));
                 })
-                .get("/", ctx -> ctx.render("index.jte"))
-                .get("/urls", ctx -> ctx.render("urls.jte"))
+                .get("/", ctx -> {
+                    List<Url> urls = urlRepository.findAll();
+                    ctx.render("index.jte", Map.of("name", "Hexlet", "urls", urls));
+                })
+                .get("/urls", ctx -> {  // Вернём список URL
+                    List<Url> urls = urlRepository.findAll();
+                    ctx.render("index.jte", Map.of("name", "Hexlet", "urls", urls));
+                })
                 .get("/urls/{id}", ctx -> {
                     long id = Long.parseLong(ctx.pathParam("id"));
-                    UrlRepository repo = new UrlRepository(DataSourceProvider.getDataSource());
-                    Url url = repo.findById(id);
+                    Url url = urlRepository.findById(id);
 
                     if (url == null) {
                         ctx.status(404).result("URL не найден");
@@ -54,9 +63,7 @@ public class App {
                                 ? protocol + "://" + host
                                 : protocol + "://" + host + ":" + port;
 
-                        UrlRepository repo = new UrlRepository(DataSourceProvider.getDataSource());
-
-                        if (repo.existsByName(normalizedUrl)) {
+                        if (urlRepository.existsByName(normalizedUrl)) {
                             ctx.sessionAttribute("flash", "Страница уже существует");
                             ctx.redirect("/");
                             return;
@@ -64,7 +71,7 @@ public class App {
 
                         Url url = new Url();
                         url.setName(normalizedUrl);
-                        repo.save(url);
+                        urlRepository.save(url);
 
                         ctx.sessionAttribute("flash", "Страница успешно добавлена");
                         ctx.redirect("/");
