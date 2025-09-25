@@ -85,4 +85,7 @@ public class AppIntegrationTest {
             assertTrue(response.body().string().contains("URL не найден"));
         });
     }
+
+
+
 }

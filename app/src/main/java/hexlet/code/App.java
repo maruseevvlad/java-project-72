@@ -5,16 +5,25 @@ import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinJte;
+import org.jsoup.Jsoup;
 
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import kong.unirest.Unirest;
+import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 public class App {
 
     // Один экземпляр репозитория на всё приложение
     private static final UrlRepository urlRepository = new UrlRepository(DataSourceProvider.getDataSource());
+    private static final UrlCheckRepository checkRepo = new UrlCheckRepository();
+
 
     private static TemplateEngine createTemplateEngine() {
         ClassLoader classLoader = App.class.getClassLoader();
@@ -80,6 +89,31 @@ public class App {
                         ctx.sessionAttribute("flash", "Некорректный URL");
                         ctx.redirect("/");
                     }
+                })
+                .post("/urls/{id}/checks", ctx -> {
+                    Long urlId = Long.parseLong(ctx.pathParam("id"));
+                    Url url = urlRepository.findById(urlId);
+                    if (url == null) {
+                        ctx.status(404).result("URL не найден");
+                        return;
+                    }
+
+                    HttpResponse<String> response = Unirest.get(url.getName()).asString();
+
+                    UrlCheck check = new UrlCheck();
+                    check.setUrlId(urlId);
+                    check.setStatusCode(response.getStatus());
+
+                    Document doc = Jsoup.parse(response.getBody());
+                    check.setTitle(doc.title());
+                    Element h1 = doc.selectFirst("h1");
+                    check.setH1(h1 != null ? h1.text() : "");
+                    Element desc = doc.selectFirst("meta[name=description]");
+                    check.setDescription(desc != null ? desc.attr("content") : "");
+                    check.setCreatedAt(LocalDateTime.now());
+
+                    checkRepo.save(check);
+                    ctx.redirect("/urls/" + urlId);
                 });
     }
 

@@ -36,6 +36,11 @@ dependencies {
 
     implementation("gg.jte:jte:3.2.1")
     implementation("gg.jte:jte-runtime:3.2.1")
+
+    implementation("com.konghq:unirest-java:3.14.5")
+    implementation("org.jsoup:jsoup:1.16.1")
+
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 checkstyle {
