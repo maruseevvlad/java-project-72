@@ -1,11 +1,11 @@
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
+import hexlet.code.App;
 import hexlet.code.Url;
 import hexlet.code.UrlCheck;
 import hexlet.code.UrlRepository;
 import hexlet.code.UrlCheckRepository;
 import io.javalin.testtools.JavalinTest;
-import hexlet.code.App;
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -73,7 +73,10 @@ public class AppFullIntegrationTest {
     }
 
     private static TemplateEngine createTemplateEngine() {
-        ResourceCodeResolver codeResolver = new ResourceCodeResolver("templates", App.class.getClassLoader());
+        ResourceCodeResolver codeResolver = new ResourceCodeResolver(
+                "templates",
+                App.class.getClassLoader()
+        );
         return TemplateEngine.create(codeResolver, gg.jte.ContentType.Html);
     }
 
@@ -116,8 +119,11 @@ public class AppFullIntegrationTest {
     void testUrlCheckCreation() throws Exception {
         mockServer.enqueue(new MockResponse()
                 .setResponseCode(200)
-                .setBody("<html><head><title>Test</title><meta name=\"description\" content=\"desc\"></head>"
-                        + "<body><h1>H1</h1></body></html>"));
+                .setBody(
+                        "<html><head><title>Test</title>"
+                        +   "<meta name=\"description\" content=\"desc\"></head>"
+                        +   "<body><h1>H1</h1></body></html>"
+                ));
 
         JavalinTest.test(App.getApp(), (server, client) -> {
             String siteUrl = mockServer.url("/").toString();
