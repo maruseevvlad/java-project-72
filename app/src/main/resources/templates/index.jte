@@ -1,8 +1,6 @@
-@import hexlet.code.Url
+@import hexlet.code.UrlDto
 @import java.time.format.DateTimeFormatter
-@param String name
-@param java.util.List<Url> urls
-
+@param java.util.List<UrlDto> urls
 
 <!DOCTYPE html>
 <html lang="ru">
@@ -25,12 +23,18 @@
 
 <h2 class="mt-4">Сохранённые адреса</h2>
 <ul class="list-group">
-    @for (Url url : urls) {
-    <li class="list-group-item">
-        <a href="/urls/${url.getId()}">${url.getName()}</a>
-        <span class="text-muted">(${url.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))})</span>
-    </li>
-    }
+    @for (hexlet.code.UrlDto urlDto : urls)
+        <li class="list-group-item">
+            <a href="/urls/${urlDto.getId()}">${urlDto.getName()}</a>
+            @if (urlDto.getLastCheck() != null)
+                <span class="text-muted">
+                Последняя проверка: ${urlDto.getLastCheck().getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))}
+                (код: ${urlDto.getLastCheck().getStatusCode()})
+            </span>
+
+            @endif
+        </li>
+    <br>
     @endfor
 </ul>
 
