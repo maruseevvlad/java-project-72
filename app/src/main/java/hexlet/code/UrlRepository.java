@@ -1,13 +1,19 @@
 package hexlet.code;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UrlRepository extends BaseRepository {
-    public UrlRepository(){
+
+    public UrlRepository() {
         super(DataSourceProvider.getDataSource());
     }
 
@@ -63,16 +69,22 @@ public class UrlRepository extends BaseRepository {
         String sql = "SELECT * FROM urls WHERE id = ?";
 
         try (Connection conn = dataSource.getConnection();
-             var stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setLong(1, id);
-            var rs = stmt.executeQuery();
-            if (rs.next()) {
-                Url url = new Url();
-                url.setId(rs.getLong("id"));
-                url.setName(rs.getString("name"));
-                url.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                return url;
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Url url = new Url();
+                    url.setId(rs.getLong("id"));
+                    url.setName(rs.getString("name"));
+                    Timestamp timestamp = rs.getTimestamp("created_at");
+                    if (timestamp != null) {
+                        url.setCreatedAt(timestamp.toLocalDateTime());
+                    }
+                    return url;
+                }
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -94,5 +106,4 @@ public class UrlRepository extends BaseRepository {
             throw new RuntimeException(e);
         }
     }
-
 }

@@ -19,8 +19,8 @@ import java.util.Map;
 
 public class App {
 
-    private static final UrlRepository urlRepository = new UrlRepository(DataSourceProvider.getDataSource());
-    private static final UrlCheckRepository checkRepo = new UrlCheckRepository();
+    private static final UrlRepository URL_REPOSITORY = new UrlRepository(DataSourceProvider.getDataSource());
+    private static final UrlCheckRepository CHECK_REPO = new UrlCheckRepository();
 
     private static TemplateEngine createTemplateEngine() {
         ResourceCodeResolver resolver = new ResourceCodeResolver("templates", App.class.getClassLoader());
@@ -31,24 +31,21 @@ public class App {
         DbInitializer.init();
 
         return Javalin.create(config -> {
-                    config.bundledPlugins.enableDevLogging();
-                    config.fileRenderer(new JavalinJte(createTemplateEngine()));
-                })
-                // Главная страница и список сайтов объединены
+            config.bundledPlugins.enableDevLogging();
+            config.fileRenderer(new JavalinJte(createTemplateEngine()));
+        })
                 .get("/", App::renderUrls)
                 .get("/urls", ctx -> ctx.redirect("/")) // редирект на /
-                // Страница конкретного сайта с проверками
                 .get("/urls/{id}", ctx -> {
                     long id = Long.parseLong(ctx.pathParam("id"));
-                    Url url = urlRepository.findById(id);
+                    Url url = URL_REPOSITORY.findById(id);
                     if (url == null) {
                         ctx.status(404).result("URL не найден");
                         return;
                     }
-                    List<UrlCheck> checks = checkRepo.findAllByUrlId(id);
+                    List<UrlCheck> checks = CHECK_REPO.findAllByUrlId(id);
                     ctx.render("urls/show.jte", Map.of("url", url, "checks", checks));
                 })
-
                 .post("/urls", ctx -> {
                     String urlValue = ctx.formParam("url");
                     try {
@@ -58,7 +55,7 @@ public class App {
                                 ? parsedUrl.getProtocol() + "://" + parsedUrl.getHost()
                                 : parsedUrl.getProtocol() + "://" + parsedUrl.getHost() + ":" + parsedUrl.getPort();
 
-                        if (urlRepository.existsByName(normalizedUrl)) {
+                        if (URL_REPOSITORY.existsByName(normalizedUrl)) {
                             ctx.sessionAttribute("flash", "Страница уже существует");
                             ctx.redirect("/");
                             return;
@@ -66,7 +63,7 @@ public class App {
 
                         Url url = new Url();
                         url.setName(normalizedUrl);
-                        urlRepository.save(url);
+                        URL_REPOSITORY.save(url);
 
                         ctx.sessionAttribute("flash", "Страница успешно добавлена");
                     } catch (Exception e) {
@@ -74,10 +71,9 @@ public class App {
                     }
                     ctx.redirect("/");
                 })
-
                 .post("/urls/{id}/checks", ctx -> {
                     long id = Long.parseLong(ctx.pathParam("id"));
-                    Url url = urlRepository.findById(id);
+                    Url url = URL_REPOSITORY.findById(id);
                     if (url == null) {
                         ctx.status(404).result("URL не найден");
                         return;
@@ -99,7 +95,7 @@ public class App {
                         check.setDescription(desc != null ? desc.attr("content") : null);
 
                         check.setCreatedAt(LocalDateTime.now());
-                        checkRepo.save(check);
+                        CHECK_REPO.save(check);
 
                         ctx.sessionAttribute("flash", "Проверка выполнена!");
                     } catch (Exception e) {
@@ -111,10 +107,10 @@ public class App {
     }
 
     private static void renderUrls(io.javalin.http.Context ctx) throws SQLException {
-        List<Url> urls = urlRepository.findAll();
+        List<Url> urls = URL_REPOSITORY.findAll();
         List<UrlDto> urlDtos = new ArrayList<>();
         for (Url url : urls) {
-            UrlCheck lastCheck = checkRepo.findLastByUrlId(url.getId());
+            UrlCheck lastCheck = CHECK_REPO.findLastByUrlId(url.getId());
             urlDtos.add(new UrlDto(url, lastCheck));
         }
         ctx.render("index.jte", Map.of("urls", urlDtos));

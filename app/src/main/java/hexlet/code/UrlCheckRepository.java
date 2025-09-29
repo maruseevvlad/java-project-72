@@ -1,7 +1,13 @@
 package hexlet.code;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +24,8 @@ public class UrlCheckRepository {
     }
 
     public UrlCheck save(UrlCheck check) {
-        String sql = "INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -27,8 +34,13 @@ public class UrlCheckRepository {
             }
 
             stmt.setLong(1, check.getUrlId());
-            if (check.getStatusCode() == null) stmt.setNull(2, Types.INTEGER);
-            else stmt.setInt(2, check.getStatusCode());
+
+            if (check.getStatusCode() == null) {
+                stmt.setNull(2, Types.INTEGER);
+            } else {
+                stmt.setInt(2, check.getStatusCode());
+            }
+
             stmt.setString(3, check.getH1());
             stmt.setString(4, check.getTitle());
             stmt.setString(5, check.getDescription());
@@ -41,6 +53,7 @@ public class UrlCheckRepository {
                     check.setId(rs.getLong(1));
                 }
             }
+
             return check;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -52,13 +65,16 @@ public class UrlCheckRepository {
         List<UrlCheck> list = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setLong(1, urlId);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     UrlCheck ch = mapRow(rs);
                     list.add(ch);
                 }
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -69,15 +85,19 @@ public class UrlCheckRepository {
         String sql = "SELECT * FROM url_checks WHERE url_id = ? ORDER BY created_at DESC LIMIT 1";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setLong(1, urlId);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return mapRow(rs);
                 }
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
         return null;
     }
 
@@ -85,13 +105,21 @@ public class UrlCheckRepository {
         UrlCheck ch = new UrlCheck();
         ch.setId(rs.getLong("id"));
         ch.setUrlId(rs.getLong("url_id"));
+
         int code = rs.getInt("status_code");
-        if (!rs.wasNull()) ch.setStatusCode(code);
+        if (!rs.wasNull()) {
+            ch.setStatusCode(code);
+        }
+
         ch.setH1(rs.getString("h1"));
         ch.setTitle(rs.getString("title"));
         ch.setDescription(rs.getString("description"));
+
         Timestamp t = rs.getTimestamp("created_at");
-        if (t != null) ch.setCreatedAt(t.toLocalDateTime());
+        if (t != null) {
+            ch.setCreatedAt(t.toLocalDateTime());
+        }
+
         return ch;
     }
 }

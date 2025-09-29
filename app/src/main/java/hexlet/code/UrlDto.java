@@ -15,8 +15,16 @@ public class UrlDto {
         this.lastCheck = lastCheck;
     }
 
-    public Long getId() { return id; }
-    public String getName() { return name; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public UrlCheck getLastCheck() { return lastCheck; }
+    public Long getId() {
+        return id;
+    }
+    public String getName() {
+        return name;
+    }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    public UrlCheck getLastCheck() {
+        return lastCheck;
+    }
 }

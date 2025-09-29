@@ -38,7 +38,9 @@ public class DataSourceProvider {
                         if (userInfo != null) {
                             String[] up = userInfo.split(":", 2);
                             user = URLDecoder.decode(up[0], StandardCharsets.UTF_8);
-                            if (up.length > 1) pass = URLDecoder.decode(up[1], StandardCharsets.UTF_8);
+                            if (up.length > 1) {
+                                pass = URLDecoder.decode(up[1], StandardCharsets.UTF_8);
+                            }
                         }
                         String host = uri.getHost();
                         int port = uri.getPort();
@@ -48,8 +50,12 @@ public class DataSourceProvider {
                         String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s", host, port, db);
 
                         config.setJdbcUrl(jdbcUrl);
-                        if (user != null) config.setUsername(user);
-                        if (pass != null) config.setPassword(pass);
+                        if (user != null) {
+                            config.setUsername(user);
+                        }
+                        if (pass != null) {
+                            config.setPassword(pass);
+                        }
                         config.setDriverClassName("org.postgresql.Driver");
                         System.out.println("Using Postgres (converted) at " + host + ":" + port + "/" + db);
                     } else {

@@ -12,7 +12,7 @@ public class Url {
     private String name;
     private LocalDateTime createdAt;
 
-    public Url(){}
+    public Url() { }
 
     public Url(Long id, String name, LocalDateTime createdAt) {
         this.id = id;
@@ -22,10 +22,11 @@ public class Url {
 
     @Override
     public String toString() {
-        return "Url{" +
-                   "id=" + id +
-                   ", name='" + name + '\'' +
-                   ", createdAt=" + createdAt +
-                   '}';
+        return "Url{"
+                + "id=" + id
+                + ", name='" + name + '\''
+                + ", createdAt=" + createdAt
+                + '}';
     }
+
 }
