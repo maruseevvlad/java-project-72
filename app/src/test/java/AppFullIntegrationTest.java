@@ -1,13 +1,21 @@
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
-import hexlet.code.*;
+import hexlet.code.Url;
+import hexlet.code.UrlCheck;
+import hexlet.code.UrlRepository;
+import hexlet.code.UrlCheckRepository;
 import io.javalin.testtools.JavalinTest;
+import hexlet.code.App;
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -15,7 +23,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AppFullIntegrationTest {
@@ -32,9 +41,8 @@ public class AppFullIntegrationTest {
         ((org.h2.jdbcx.JdbcDataSource) dataSource).setUser("sa");
         ((org.h2.jdbcx.JdbcDataSource) dataSource).setPassword("");
 
-        // Инициализация базы, если нужно
-        try (var conn = dataSource.getConnection();
-             var stmt = conn.createStatement()) {
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement()) {
             stmt.execute("CREATE TABLE IF NOT EXISTS urls (id INT PRIMARY KEY, name VARCHAR(255))");
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -74,7 +82,9 @@ public class AppFullIntegrationTest {
         JavalinTest.test(App.getApp(), (server, client) -> {
             Request post = new Request.Builder()
                     .url(client.getOrigin() + "/urls")
-                    .post(new FormBody.Builder().add("url", "https://example.com").build())
+                    .post(new FormBody.Builder()
+                            .add("url", "https://example.com")
+                            .build())
                     .build();
             client.request(post);
 
@@ -84,10 +94,12 @@ public class AppFullIntegrationTest {
             assertEquals("https://example.com", url.getName());
 
             Response listResp = client.get("/urls");
-            assertTrue(listResp.body().string().contains("https://example.com"));
+            String listBody = listResp.body().string();
+            assertTrue(listBody.contains("https://example.com"));
 
             Response showResp = client.get("/urls/" + url.getId());
-            assertTrue(showResp.body().string().contains("https://example.com"));
+            String showBody = showResp.body().string();
+            assertTrue(showBody.contains("https://example.com"));
         });
     }
 
@@ -104,14 +116,17 @@ public class AppFullIntegrationTest {
     void testUrlCheckCreation() throws Exception {
         mockServer.enqueue(new MockResponse()
                 .setResponseCode(200)
-                .setBody("<html><head><title>Test</title><meta name=\"description\" content=\"desc\"></head><body><h1>H1</h1></body></html>"));
+                .setBody("<html><head><title>Test</title><meta name=\"description\" content=\"desc\"></head>"
+                        + "<body><h1>H1</h1></body></html>"));
 
         JavalinTest.test(App.getApp(), (server, client) -> {
             String siteUrl = mockServer.url("/").toString();
 
             Request postUrl = new Request.Builder()
                     .url(client.getOrigin() + "/urls")
-                    .post(new FormBody.Builder().add("url", siteUrl).build())
+                    .post(new FormBody.Builder()
+                            .add("url", siteUrl)
+                            .build())
                     .build();
             client.request(postUrl);
 
@@ -137,13 +152,17 @@ public class AppFullIntegrationTest {
         JavalinTest.test(App.getApp(), (server, client) -> {
             Request post1 = new Request.Builder()
                     .url(client.getOrigin() + "/urls")
-                    .post(new FormBody.Builder().add("url", "https://example.com").build())
+                    .post(new FormBody.Builder()
+                            .add("url", "https://example.com")
+                            .build())
                     .build();
             client.request(post1);
 
             Request post2 = new Request.Builder()
                     .url(client.getOrigin() + "/urls")
-                    .post(new FormBody.Builder().add("url", "https://example.com").build())
+                    .post(new FormBody.Builder()
+                            .add("url", "https://example.com")
+                            .build())
                     .build();
             Response resp2 = client.request(post2);
             assertTrue(resp2.isSuccessful() || resp2.code() == 302);
