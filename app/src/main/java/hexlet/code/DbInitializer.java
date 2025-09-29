@@ -15,7 +15,7 @@ public class DbInitializer {
                 return;
             }
             String sql = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            // Разбиваем по ';' чтобы выполнить несколько команд
+
             for (String stmt : sql.split(";")) {
                 String s = stmt.trim();
                 if (!s.isEmpty()) {

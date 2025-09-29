@@ -29,7 +29,7 @@ public class DataSourceProvider {
                     config.setPassword("");
                     System.out.println("Using H2 in-memory database");
                 } else {
-                    // Если получили URL вида "postgres://user:pass@host:5432/dbname"
+
                     if (rawUrl.startsWith("postgres://")) {
                         URI uri = new URI(rawUrl);
                         String userInfo = uri.getUserInfo(); // user:pass
@@ -46,14 +46,14 @@ public class DataSourceProvider {
                         String db = (path != null && path.startsWith("/")) ? path.substring(1) : path;
 
                         String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s", host, port, db);
-                        // Если нужно, можно добавить ?sslmode=require и т.п.
+
                         config.setJdbcUrl(jdbcUrl);
                         if (user != null) config.setUsername(user);
                         if (pass != null) config.setPassword(pass);
                         config.setDriverClassName("org.postgresql.Driver");
                         System.out.println("Using Postgres (converted) at " + host + ":" + port + "/" + db);
                     } else {
-                        // Предполагаем, что уже JDBC URL, например jdbc:postgresql://...
+
                         config.setJdbcUrl(rawUrl);
                         config.setDriverClassName("org.postgresql.Driver");
                         System.out.println("Using JDBC URL from JDBC_DATABASE_URL");

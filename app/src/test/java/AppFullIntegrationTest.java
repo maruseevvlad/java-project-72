@@ -1,8 +1,6 @@
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
 import hexlet.code.*;
-import io.javalin.Javalin;
-import io.javalin.rendering.template.JavalinJte;
 import io.javalin.testtools.JavalinTest;
 import okhttp3.FormBody;
 import okhttp3.Request;

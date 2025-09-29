@@ -48,7 +48,7 @@ public class App {
                     List<UrlCheck> checks = checkRepo.findAllByUrlId(id);
                     ctx.render("urls/show.jte", Map.of("url", url, "checks", checks));
                 })
-                // Добавление нового сайта
+
                 .post("/urls", ctx -> {
                     String urlValue = ctx.formParam("url");
                     try {
@@ -74,7 +74,7 @@ public class App {
                     }
                     ctx.redirect("/");
                 })
-                // Проверка сайта
+
                 .post("/urls/{id}/checks", ctx -> {
                     long id = Long.parseLong(ctx.pathParam("id"));
                     Url url = urlRepository.findById(id);
