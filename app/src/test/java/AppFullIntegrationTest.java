@@ -37,7 +37,9 @@ public class AppFullIntegrationTest {
 //    @BeforeEach
 //    void setUp() {
 //        dataSource = new org.h2.jdbcx.JdbcDataSource();
-//        ((org.h2.jdbcx.JdbcDataSource) dataSource).setURL("jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
+//        ((org.h2.jdbcx.JdbcDataSource) dataSource).setURL("jdbc:h2:mem:project;
+//        DB_CLOSE_DELAY=-1;
+//        DB_CLOSE_ON_EXIT=FALSE");
 //        ((org.h2.jdbcx.JdbcDataSource) dataSource).setUser("sa");
 //        ((org.h2.jdbcx.JdbcDataSource) dataSource).setPassword("");
 //
@@ -62,15 +64,15 @@ public class AppFullIntegrationTest {
         }
     }
 
-    @BeforeEach
-    public void cleanDb() throws SQLException {
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement()) {
-            statement.execute("SET REFERENTIAL_INTEGRITY FALSE");
-            statement.execute("DELETE FROM urls");
-            statement.execute("SET REFERENTIAL_INTEGRITY TRUE");
-        }
-    }
+//    @BeforeEach
+//    public void cleanDb() throws SQLException {
+//        try (Connection connection = dataSource.getConnection();
+//             Statement statement = connection.createStatement()) {
+//            statement.execute("SET REFERENTIAL_INTEGRITY FALSE");
+//            statement.execute("DELETE FROM urls");
+//            statement.execute("SET REFERENTIAL_INTEGRITY TRUE");
+//        }
+//    }
 
     private static TemplateEngine createTemplateEngine() {
         ResourceCodeResolver codeResolver = new ResourceCodeResolver(
