@@ -1,6 +1,8 @@
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
-import hexlet.code.*;
+import hexlet.code.Url;
+import hexlet.code.UrlCheckRepository;
+import hexlet.code.UrlRepository;
 import io.javalin.Javalin;
 import io.javalin.testtools.JavalinTest;
 import okhttp3.FormBody;
@@ -9,16 +11,14 @@ import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import hexlet.code.App;
+import hexlet.code.DataSourceProvider;
+import hexlet.code.UrlCheck;
 
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -84,7 +84,6 @@ public class AppFullIntegrationTest {
     @Test
     void testAddUrlAndShowListAndPage() {
         Javalin app = App.getApp();
-        
         JavalinTest.test(app, (server, client) -> {
             Request post = new Request.Builder()
                     .url(client.getOrigin() + "/urls")
