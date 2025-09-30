@@ -34,20 +34,20 @@ public class AppFullIntegrationTest {
     private final UrlRepository urlRepo = new UrlRepository();
     private final UrlCheckRepository checkRepo = new UrlCheckRepository();
 
-    @BeforeEach
-    void setUp() {
-        dataSource = new org.h2.jdbcx.JdbcDataSource();
-        ((org.h2.jdbcx.JdbcDataSource) dataSource).setURL("jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
-        ((org.h2.jdbcx.JdbcDataSource) dataSource).setUser("sa");
-        ((org.h2.jdbcx.JdbcDataSource) dataSource).setPassword("");
-
-        try (Connection conn = dataSource.getConnection();
-             Statement stmt = conn.createStatement()) {
-            stmt.execute("CREATE TABLE IF NOT EXISTS urls (id INT PRIMARY KEY, name VARCHAR(255))");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    @BeforeEach
+//    void setUp() {
+//        dataSource = new org.h2.jdbcx.JdbcDataSource();
+//        ((org.h2.jdbcx.JdbcDataSource) dataSource).setURL("jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
+//        ((org.h2.jdbcx.JdbcDataSource) dataSource).setUser("sa");
+//        ((org.h2.jdbcx.JdbcDataSource) dataSource).setPassword("");
+//
+//        try (Connection conn = dataSource.getConnection();
+//             Statement stmt = conn.createStatement()) {
+//            stmt.execute("CREATE TABLE IF NOT EXISTS urls (id INT PRIMARY KEY, name VARCHAR(255))");
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     @BeforeAll
     void startMockServer() throws Exception {
