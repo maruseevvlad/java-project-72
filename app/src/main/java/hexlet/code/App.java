@@ -20,7 +20,7 @@ import java.util.Map;
 public class App {
 
     private static final UrlRepository URL_REPOSITORY = new UrlRepository(DataSourceProvider.getDataSource());
-    private static final UrlCheckRepository CHECK_REPO = new UrlCheckRepository();
+    private static final UrlCheckRepository CHECK_REPO = new UrlCheckRepository(DataSourceProvider.getDataSource());
 
     private static TemplateEngine createTemplateEngine() {
         ResourceCodeResolver resolver = new ResourceCodeResolver("templates", App.class.getClassLoader());

@@ -1,10 +1,6 @@
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
-import hexlet.code.App;
-import hexlet.code.Url;
-import hexlet.code.UrlCheck;
-import hexlet.code.UrlRepository;
-import hexlet.code.UrlCheckRepository;
+import hexlet.code.*;
 import io.javalin.Javalin;
 import io.javalin.testtools.JavalinTest;
 import okhttp3.FormBody;
@@ -33,8 +29,9 @@ public class AppFullIntegrationTest {
 
     private DataSource dataSource;
     private static MockWebServer mockServer;
-    private final UrlRepository urlRepo = new UrlRepository();
-    private final UrlCheckRepository checkRepo = new UrlCheckRepository();
+
+    private final UrlRepository urlRepo = new UrlRepository(DataSourceProvider.getDataSource());
+    private final UrlCheckRepository checkRepo = new UrlCheckRepository(DataSourceProvider.getDataSource());
 
 //    @BeforeEach
 //    void setUp() {
