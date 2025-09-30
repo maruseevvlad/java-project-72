@@ -5,6 +5,7 @@ import hexlet.code.Url;
 import hexlet.code.UrlCheck;
 import hexlet.code.UrlRepository;
 import hexlet.code.UrlCheckRepository;
+import io.javalin.Javalin;
 import io.javalin.testtools.JavalinTest;
 import okhttp3.FormBody;
 import okhttp3.Request;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -84,7 +86,9 @@ public class AppFullIntegrationTest {
 
     @Test
     void testAddUrlAndShowListAndPage() {
-        JavalinTest.test(App.getApp(), (server, client) -> {
+        Javalin app = App.getApp();
+        
+        JavalinTest.test(app, (server, client) -> {
             Request post = new Request.Builder()
                     .url(client.getOrigin() + "/urls")
                     .post(new FormBody.Builder()

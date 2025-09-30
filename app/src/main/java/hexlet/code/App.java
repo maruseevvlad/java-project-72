@@ -35,7 +35,7 @@ public class App {
             config.fileRenderer(new JavalinJte(createTemplateEngine()));
         })
                 .get("/", App::renderUrls)
-                .get("/urls", ctx -> ctx.redirect("/")) // редирект на /
+                .get("/urls", ctx -> ctx.redirect("/"))
                 .get("/urls/{id}", ctx -> {
                     long id = Long.parseLong(ctx.pathParam("id"));
                     Url url = URL_REPOSITORY.findById(id);
