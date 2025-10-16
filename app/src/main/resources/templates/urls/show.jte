@@ -1,58 +1,59 @@
-@import hexlet.code.Url
-@import hexlet.code.UrlCheck
-@import java.util.List
-@import java.time.format.DateTimeFormatter
+@import hexlet.code.dto.UrlPage
+@import hexlet.code.util.DateUtils
+@import hexlet.code.util.NamedRoutes
+@param UrlPage page
 
-@param Url url
-@param List<UrlCheck> checks
+@template.layout.page(
+    page = page,
+    content = @`
+        <section>
+            <div class="container-lg mt-5">
+                <h1>Сайт: ${page.getUrl().getName()}</h1>
+                <table class="table table-bordered table-hover mt-3">
+                    <tbody>
+                    <tr>
+                        <td>ID</td>
+                        <td>${page.getUrl().getId()}</td>
+                    </tr>
+                    <tr>
+                        <td>Имя</td>
+                        <td>${page.getUrl().getName()}</td>
+                    </tr>
+                    <tr>
+                        <td>Дата создания</td>
+                        <td>${DateUtils.getFormattedUrlDate(page.getUrl())}</td>
+                    </tr>
+                    </tbody>
+                </table>
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>${url.getName()}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container mt-5">
+                <h2 class="mt-5">Проверки</h2>
+                <form method="post" action="${NamedRoutes.urlCheckPath(page.getUrl().getId())}">
+                    <button type="submit" class="btn btn-primary">Запустить проверку</button>
+                </form>
 
-<h1>Информация о URL</h1>
-
-<p><b>ID:</b> ${url.getId()}</p>
-<p><b>Имя:</b> ${url.getName()}</p>
-<p><b>Дата добавления:</b> ${url.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))}</p>
-
-<h2 class="mt-4">Проверки сайта</h2>
-<table class="table table-bordered">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Статус-код</th>
-        <th>H1</th>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Дата проверки</th>
-    </tr>
-    </thead>
-    <tbody>
-    @for (UrlCheck check : checks)
-        <tr>
-            <td>${check.getId()}</td>
-            <td>${check.getStatusCode()}</td>
-            <td>${check.getH1()}</td>
-            <td>${check.getTitle()}</td>
-            <td>${check.getDescription()}</td>
-            <td>${check.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))}</td>
-        </tr>
-    @endfor
-    </tbody>
-</table>
-
-<!-- Форма для новой проверки -->
-<form action="/urls/${url.getId()}/checks" method="post" class="mt-3">
-    <button type="submit" class="btn btn-primary">Проверить сайт</button>
-</form>
-
-<a href="/urls" class="btn btn-secondary mt-3">Назад к списку сайтов</a>
-
-</body>
-</html>
+                <table class="table table-bordered table-hover mt-3">
+                    <thead>
+                        <th class="col-1">ID</th>
+                        <th class="col-1">Код ответа</th>
+                        <th>title</th>
+                        <th>h1</th>
+                        <th>description</th>
+                        <th class="col-2">Дата проверки</th>
+                    </thead>
+                    <tbody>
+                    @for(var check : page.getUrlChecks())
+                        <tr>
+                            <td>${check.getId()}</td>
+                            <td>${check.getStatusCode()}</td>
+                            <td>${check.getTitle()}</td>
+                            <td>${check.getH1()}</td>
+                            <td>${check.getDescription()}</td>
+                            <td>${DateUtils.getFormattedCheckDate(check)}</td>
+                        </tr>
+                    @endfor
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    `
+)

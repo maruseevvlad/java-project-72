@@ -1,123 +1,80 @@
 package hexlet.code;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
+import hexlet.code.controller.RootController;
+import hexlet.code.controller.UrlsController;
+import hexlet.code.repository.BaseRepository;
+import hexlet.code.util.NamedRoutes;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinJte;
-import kong.unirest.Unirest;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.net.URL;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 public class App {
-
-    private static final UrlRepository URL_REPOSITORY = new UrlRepository(DataSourceProvider.getDataSource());
-    private static final UrlCheckRepository CHECK_REPO = new UrlCheckRepository();
+    public static void main(String[] args) throws IOException, SQLException {
+        Javalin app = getApp();
+        app.start(getPort());
+    }
 
     private static TemplateEngine createTemplateEngine() {
-        ResourceCodeResolver resolver = new ResourceCodeResolver("templates", App.class.getClassLoader());
-        return TemplateEngine.create(resolver, ContentType.Html);
+        ClassLoader classLoader = App.class.getClassLoader();
+        ResourceCodeResolver codeResolver = new ResourceCodeResolver("templates", classLoader);
+        return TemplateEngine.create(codeResolver, ContentType.Html);
     }
 
-    public static Javalin getApp() {
-        DbInitializer.init();
+    private static int getPort() {
+        String port = System.getenv().getOrDefault("PORT", "7070");
+        return Integer.parseInt(port);
+    }
 
-        return Javalin.create(config -> {
+    private static String getDatabaseUrl() {
+        return System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;");
+    }
+
+    private static String readResourceFile(String fileName) throws IOException {
+        InputStream inputStream = App.class.getClassLoader().getResourceAsStream(fileName);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            return reader.lines().collect(Collectors.joining("\n"));
+        }
+    }
+
+    public static Javalin getApp() throws IOException, SQLException {
+        Logger logger = LoggerFactory.getLogger(App.class);
+
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(getDatabaseUrl());
+        HikariDataSource dataSource = new HikariDataSource(hikariConfig);
+        String sql = readResourceFile("schema.sql");
+
+        logger.info(sql);
+        try (var connection = dataSource.getConnection();
+            var statement = connection.createStatement()) {
+            statement.execute(sql);
+        }
+        BaseRepository.dataSource = dataSource;
+
+        var app = Javalin.create(config -> {
             config.bundledPlugins.enableDevLogging();
             config.fileRenderer(new JavalinJte(createTemplateEngine()));
-        })
-                .get("/", App::renderUrls)
-                .get("/urls", ctx -> ctx.redirect("/")) // редирект на /
-                .get("/urls/{id}", ctx -> {
-                    long id = Long.parseLong(ctx.pathParam("id"));
-                    Url url = URL_REPOSITORY.findById(id);
-                    if (url == null) {
-                        ctx.status(404).result("URL не найден");
-                        return;
-                    }
-                    List<UrlCheck> checks = CHECK_REPO.findAllByUrlId(id);
-                    ctx.render("urls/show.jte", Map.of("url", url, "checks", checks));
-                })
-                .post("/urls", ctx -> {
-                    String urlValue = ctx.formParam("url");
-                    try {
-                        URI uri = new URI(urlValue);
-                        URL parsedUrl = uri.toURL();
-                        String normalizedUrl = parsedUrl.getPort() == -1
-                                ? parsedUrl.getProtocol() + "://" + parsedUrl.getHost()
-                                : parsedUrl.getProtocol() + "://" + parsedUrl.getHost() + ":" + parsedUrl.getPort();
+        });
 
-                        if (URL_REPOSITORY.existsByName(normalizedUrl)) {
-                            ctx.sessionAttribute("flash", "Страница уже существует");
-                            ctx.redirect("/");
-                            return;
-                        }
-
-                        Url url = new Url();
-                        url.setName(normalizedUrl);
-                        URL_REPOSITORY.save(url);
-
-                        ctx.sessionAttribute("flash", "Страница успешно добавлена");
-                    } catch (Exception e) {
-                        ctx.sessionAttribute("flash", "Некорректный URL");
-                    }
-                    ctx.redirect("/");
-                })
-                .post("/urls/{id}/checks", ctx -> {
-                    long id = Long.parseLong(ctx.pathParam("id"));
-                    Url url = URL_REPOSITORY.findById(id);
-                    if (url == null) {
-                        ctx.status(404).result("URL не найден");
-                        return;
-                    }
-
-                    try {
-                        var response = Unirest.get(url.getName()).asString();
-                        var doc = Jsoup.parse(response.getBody());
-
-                        UrlCheck check = new UrlCheck();
-                        check.setUrlId(url.getId());
-                        check.setStatusCode(response.getStatus());
-                        check.setTitle(doc.title());
-
-                        Element h1 = doc.selectFirst("h1");
-                        check.setH1(h1 != null ? h1.text() : null);
-
-                        Element desc = doc.selectFirst("meta[name=description]");
-                        check.setDescription(desc != null ? desc.attr("content") : null);
-
-                        check.setCreatedAt(LocalDateTime.now());
-                        CHECK_REPO.save(check);
-
-                        ctx.sessionAttribute("flash", "Проверка выполнена!");
-                    } catch (Exception e) {
-                        ctx.sessionAttribute("flash", "Ошибка при проверке");
-                    }
-
-                    ctx.redirect("/urls/" + id);
-                });
-    }
-
-    private static void renderUrls(io.javalin.http.Context ctx) throws SQLException {
-        List<Url> urls = URL_REPOSITORY.findAll();
-        List<UrlDto> urlDtos = new ArrayList<>();
-        for (Url url : urls) {
-            UrlCheck lastCheck = CHECK_REPO.findLastByUrlId(url.getId());
-            urlDtos.add(new UrlDto(url, lastCheck));
-        }
-        ctx.render("index.jte", Map.of("urls", urlDtos));
-    }
-
-    public static void main(String[] args) {
-        Javalin app = getApp();
-        app.start(7070);
+        app.get(NamedRoutes.rootPath(), RootController::index);
+        app.post(NamedRoutes.urlsPath(), UrlsController::create);
+        app.get(NamedRoutes.urlsPath(), UrlsController::index);
+        app.get(NamedRoutes.urlPath("{id}"), UrlsController::show);
+        app.post(NamedRoutes.urlCheckPath("{id}"), UrlsController::check);
+        return app;
     }
 }

@@ -1,57 +1,64 @@
 package gg.jte.generated.ondemand.urls;
-import hexlet.code.Url;
-import hexlet.code.UrlCheck;
-import java.util.List;
-import java.time.format.DateTimeFormatter;
+import hexlet.code.dto.UrlPage;
+import hexlet.code.util.DateUtils;
+import hexlet.code.util.NamedRoutes;
 @SuppressWarnings("unchecked")
 public final class JteshowGenerated {
 	public static final String JTE_NAME = "urls/show.jte";
-	public static final int[] JTE_LINE_INFO = {0,0,1,2,3,5,5,5,5,12,12,12,12,19,19,19,20,20,20,21,21,21,36,36,38,38,38,39,39,39,40,40,40,41,41,41,42,42,42,43,43,43,45,45,49,50,50,50,50,58,58,58,5,6,6,6,6};
-	public static void render(gg.jte.html.HtmlTemplateOutput jteOutput, gg.jte.html.HtmlInterceptor jteHtmlInterceptor, Url url, List<UrlCheck> checks) {
-		jteOutput.writeContent("\r\n<!DOCTYPE html>\r\n<html lang=\"ru\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <title>");
-		jteOutput.setContext("title", null);
-		jteOutput.writeUserContent(url.getName());
-		jteOutput.writeContent("</title>\r\n    <link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css\" rel=\"stylesheet\">\r\n</head>\r\n<body class=\"container mt-5\">\r\n\r\n<h1>Информация о URL</h1>\r\n\r\n<p><b>ID:</b> ");
-		jteOutput.setContext("p", null);
-		jteOutput.writeUserContent(url.getId());
-		jteOutput.writeContent("</p>\r\n<p><b>Имя:</b> ");
-		jteOutput.setContext("p", null);
-		jteOutput.writeUserContent(url.getName());
-		jteOutput.writeContent("</p>\r\n<p><b>Дата добавления:</b> ");
-		jteOutput.setContext("p", null);
-		jteOutput.writeUserContent(url.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-		jteOutput.writeContent("</p>\r\n\r\n<h2 class=\"mt-4\">Проверки сайта</h2>\r\n<table class=\"table table-bordered\">\r\n    <thead>\r\n    <tr>\r\n        <th>ID</th>\r\n        <th>Статус-код</th>\r\n        <th>H1</th>\r\n        <th>Title</th>\r\n        <th>Description</th>\r\n        <th>Дата проверки</th>\r\n    </tr>\r\n    </thead>\r\n    <tbody>\r\n    ");
-		for (UrlCheck check : checks) {
-			jteOutput.writeContent("\r\n        <tr>\r\n            <td>");
-			jteOutput.setContext("td", null);
-			jteOutput.writeUserContent(check.getId());
-			jteOutput.writeContent("</td>\r\n            <td>");
-			jteOutput.setContext("td", null);
-			jteOutput.writeUserContent(check.getStatusCode());
-			jteOutput.writeContent("</td>\r\n            <td>");
-			jteOutput.setContext("td", null);
-			jteOutput.writeUserContent(check.getH1());
-			jteOutput.writeContent("</td>\r\n            <td>");
-			jteOutput.setContext("td", null);
-			jteOutput.writeUserContent(check.getTitle());
-			jteOutput.writeContent("</td>\r\n            <td>");
-			jteOutput.setContext("td", null);
-			jteOutput.writeUserContent(check.getDescription());
-			jteOutput.writeContent("</td>\r\n            <td>");
-			jteOutput.setContext("td", null);
-			jteOutput.writeUserContent(check.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-			jteOutput.writeContent("</td>\r\n        </tr>\r\n    ");
-		}
-		jteOutput.writeContent("\r\n    </tbody>\r\n</table>\r\n\r\n");
-		jteOutput.writeContent("\r\n<form action=\"/urls/");
-		jteOutput.setContext("form", "action");
-		jteOutput.writeUserContent(url.getId());
-		jteOutput.setContext("form", null);
-		jteOutput.writeContent("/checks\" method=\"post\" class=\"mt-3\">\r\n    <button type=\"submit\" class=\"btn btn-primary\">Проверить сайт</button>\r\n</form>\r\n\r\n<a href=\"/urls\" class=\"btn btn-secondary mt-3\">Назад к списку сайтов</a>\r\n\r\n</body>\r\n</html>\r\n");
+	public static final int[] JTE_LINE_INFO = {0,0,1,2,3,3,3,3,5,5,8,8,11,11,11,16,16,16,20,20,20,24,24,24,30,30,30,30,30,30,30,30,30,44,44,46,46,46,47,47,47,48,48,48,49,49,49,50,50,50,51,51,51,53,53,58,58,58,58,58,3,3,3,3};
+	public static void render(gg.jte.html.HtmlTemplateOutput jteOutput, gg.jte.html.HtmlInterceptor jteHtmlInterceptor, UrlPage page) {
+		jteOutput.writeContent("\n");
+		gg.jte.generated.ondemand.layout.JtepageGenerated.render(jteOutput, jteHtmlInterceptor, page, new gg.jte.html.HtmlContent() {
+			public void writeTo(gg.jte.html.HtmlTemplateOutput jteOutput) {
+				jteOutput.writeContent("\n        <section>\n            <div class=\"container-lg mt-5\">\n                <h1>Сайт: ");
+				jteOutput.setContext("h1", null);
+				jteOutput.writeUserContent(page.getUrl().getName());
+				jteOutput.writeContent("</h1>\n                <table class=\"table table-bordered table-hover mt-3\">\n                    <tbody>\n                    <tr>\n                        <td>ID</td>\n                        <td>");
+				jteOutput.setContext("td", null);
+				jteOutput.writeUserContent(page.getUrl().getId());
+				jteOutput.writeContent("</td>\n                    </tr>\n                    <tr>\n                        <td>Имя</td>\n                        <td>");
+				jteOutput.setContext("td", null);
+				jteOutput.writeUserContent(page.getUrl().getName());
+				jteOutput.writeContent("</td>\n                    </tr>\n                    <tr>\n                        <td>Дата создания</td>\n                        <td>");
+				jteOutput.setContext("td", null);
+				jteOutput.writeUserContent(DateUtils.getFormattedUrlDate(page.getUrl()));
+				jteOutput.writeContent("</td>\n                    </tr>\n                    </tbody>\n                </table>\n\n                <h2 class=\"mt-5\">Проверки</h2>\n                <form method=\"post\"");
+				var __jte_html_attribute_0 = NamedRoutes.urlCheckPath(page.getUrl().getId());
+				if (gg.jte.runtime.TemplateUtils.isAttributeRendered(__jte_html_attribute_0)) {
+					jteOutput.writeContent(" action=\"");
+					jteOutput.setContext("form", "action");
+					jteOutput.writeUserContent(__jte_html_attribute_0);
+					jteOutput.setContext("form", null);
+					jteOutput.writeContent("\"");
+				}
+				jteOutput.writeContent(">\n                    <button type=\"submit\" class=\"btn btn-primary\">Запустить проверку</button>\n                </form>\n\n                <table class=\"table table-bordered table-hover mt-3\">\n                    <thead>\n                        <th class=\"col-1\">ID</th>\n                        <th class=\"col-1\">Код ответа</th>\n                        <th>title</th>\n                        <th>h1</th>\n                        <th>description</th>\n                        <th class=\"col-2\">Дата проверки</th>\n                    </thead>\n                    <tbody>\n                    ");
+				for (var check : page.getUrlChecks()) {
+					jteOutput.writeContent("\n                        <tr>\n                            <td>");
+					jteOutput.setContext("td", null);
+					jteOutput.writeUserContent(check.getId());
+					jteOutput.writeContent("</td>\n                            <td>");
+					jteOutput.setContext("td", null);
+					jteOutput.writeUserContent(check.getStatusCode());
+					jteOutput.writeContent("</td>\n                            <td>");
+					jteOutput.setContext("td", null);
+					jteOutput.writeUserContent(check.getTitle());
+					jteOutput.writeContent("</td>\n                            <td>");
+					jteOutput.setContext("td", null);
+					jteOutput.writeUserContent(check.getH1());
+					jteOutput.writeContent("</td>\n                            <td>");
+					jteOutput.setContext("td", null);
+					jteOutput.writeUserContent(check.getDescription());
+					jteOutput.writeContent("</td>\n                            <td>");
+					jteOutput.setContext("td", null);
+					jteOutput.writeUserContent(DateUtils.getFormattedCheckDate(check));
+					jteOutput.writeContent("</td>\n                        </tr>\n                    ");
+				}
+				jteOutput.writeContent("\n                    </tbody>\n                </table>\n            </div>\n        </section>\n    ");
+			}
+		});
 	}
 	public static void renderMap(gg.jte.html.HtmlTemplateOutput jteOutput, gg.jte.html.HtmlInterceptor jteHtmlInterceptor, java.util.Map<String, Object> params) {
-		Url url = (Url)params.get("url");
-		List<UrlCheck> checks = (List<UrlCheck>)params.get("checks");
-		render(jteOutput, jteHtmlInterceptor, url, checks);
+		UrlPage page = (UrlPage)params.get("page");
+		render(jteOutput, jteHtmlInterceptor, page);
 	}
 }

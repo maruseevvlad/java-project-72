@@ -1,8 +1,10 @@
-FROM gradle:7.4.0-jdk17
+FROM eclipse-temurin:21-jdk
+
+ARG GRADLE_VERSION=8.10
 
 WORKDIR /app
 
-COPY /app .
+COPY app/ .
 
 RUN ./gradlew installDist
 
