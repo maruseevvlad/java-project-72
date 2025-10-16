@@ -1,0 +1,182 @@
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index ef7caf7..ed22e58 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -21,6 +21,7 @@ jobs:
+         with:
+           java-version: 17
+           distribution: 'zulu'
++          cache: 'gradle'
+ 
+       - name: Cache Gradle packages
+         uses: actions/cache@v4
+@@ -51,4 +52,5 @@ jobs:
+       - name: SonarQube Analysis
+         env:
+           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
++          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+         run: ./gradlew sonar --info
+diff --git a/app/src/main/java/hexlet/code/App.java b/app/src/main/java/hexlet/code/App.java
+index a5dd03a..832064c 100644
+--- a/app/src/main/java/hexlet/code/App.java
++++ b/app/src/main/java/hexlet/code/App.java
+@@ -28,7 +28,7 @@ public class App {
+     }
+ 
+     public static Javalin getApp() {
+-        DbInitializer.init();
++        DataSourceProvider.init();
+ 
+         return Javalin.create(config -> {
+             config.bundledPlugins.enableDevLogging();
+diff --git a/app/src/main/java/hexlet/code/DataSourceProvider.java b/app/src/main/java/hexlet/code/DataSourceProvider.java
+index 764db07..73644eb 100644
+--- a/app/src/main/java/hexlet/code/DataSourceProvider.java
++++ b/app/src/main/java/hexlet/code/DataSourceProvider.java
+@@ -4,16 +4,22 @@ import com.zaxxer.hikari.HikariConfig;
+ import com.zaxxer.hikari.HikariDataSource;
+ 
+ import javax.sql.DataSource;
++import java.io.IOException;
++import java.io.InputStream;
+ import java.net.URI;
+ import java.net.URISyntaxException;
+ import java.net.URLDecoder;
+ import java.nio.charset.StandardCharsets;
++import java.sql.Connection;
++import java.sql.SQLException;
++import java.sql.Statement;
++import java.util.Properties;
+ 
+ public class DataSourceProvider {
+ 
+     private static HikariDataSource dataSource;
+ 
+-    public static DataSource getDataSource() {
++    public static synchronized DataSource getDataSource() {
+         if (dataSource == null) {
+             HikariConfig config = new HikariConfig();
+ 
+@@ -77,9 +83,32 @@ public class DataSourceProvider {
+         return dataSource;
+     }
+ 
++    public static void init() {
++        try (Connection conn = getDataSource().getConnection()) {
++            InputStream is = DataSourceProvider.class.getClassLoader().getResourceAsStream("schema.sql");
++            if (is == null) {
++                System.out.println("schema.sql not found in resources");
++                return;
++            }
++            String sql = new String(is.readAllBytes(), StandardCharsets.UTF_8);
++            for (String stmt : sql.split(";")) {
++                String s = stmt.trim();
++                if (!s.isEmpty()) {
++                    try (Statement statement = conn.createStatement()) {
++                        statement.execute(s);
++                    }
++                }
++            }
++            System.out.println("DB schema initialized");
++        } catch (Exception e) {
++            throw new RuntimeException("Failed to initialize DB schema", e);
++        }
++    }
++
+     public static void close() {
+         if (dataSource != null) {
+             dataSource.close();
+         }
+     }
+ }
++
+diff --git a/app/src/main/java/hexlet/code/DbInitializer.java b/app/src/main/java/hexlet/code/DbInitializer.java
+deleted file mode 100644
+index 7060a36..0000000
+--- a/app/src/main/java/hexlet/code/DbInitializer.java
++++ /dev/null
+@@ -1,32 +0,0 @@
+-package hexlet.code;
+-
+-import java.io.InputStream;
+-import java.nio.charset.StandardCharsets;
+-import java.sql.Connection;
+-import java.sql.Statement;
+-
+-public class DbInitializer {
+-
+-    public static void init() {
+-        try (Connection conn = DataSourceProvider.getDataSource().getConnection()) {
+-            InputStream is = DbInitializer.class.getClassLoader().getResourceAsStream("schema.sql");
+-            if (is == null) {
+-                System.out.println("schema.sql not found in resources");
+-                return;
+-            }
+-            String sql = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+-
+-            for (String stmt : sql.split(";")) {
+-                String s = stmt.trim();
+-                if (!s.isEmpty()) {
+-                    try (Statement statement = conn.createStatement()) {
+-                        statement.execute(s);
+-                    }
+-                }
+-            }
+-            System.out.println("DB schema initialized");
+-        } catch (Exception e) {
+-            throw new RuntimeException("Failed to initialize DB schema", e);
+-        }
+-    }
+-}
+diff --git a/app/src/main/java/hexlet/code/UrlRepository.java b/app/src/main/java/hexlet/code/UrlRepository.java
+index 0ae16b8..89983c9 100644
+--- a/app/src/main/java/hexlet/code/UrlRepository.java
++++ b/app/src/main/java/hexlet/code/UrlRepository.java
+@@ -14,7 +14,7 @@ import java.util.List;
+ public class UrlRepository extends BaseRepository {
+ 
+     public UrlRepository() {
+-        super(DataSourceProvider.getDataSource());
++        this(DataSourceProvider.getDataSource());
+     }
+ 
+     public UrlRepository(DataSource dataSource) {
+diff --git a/app/src/main/resources/schema.sql b/app/src/main/resources/schema.sql
+index ff0b43f..57dcc54 100644
+--- a/app/src/main/resources/schema.sql
++++ b/app/src/main/resources/schema.sql
+@@ -1,21 +1,19 @@
+-DROP TABLE IF EXISTS urls, url_checks;
++DROP TABLE IF EXISTS url_checks;
++DROP TABLE IF EXISTS urls;
+ 
+-CREATE TABLE IF NOT EXISTS urls (
+-    id INT PRIMARY KEY AUTO_INCREMENT,
+-    name VARCHAR(255) NOT NULL,
++CREATE TABLE urls (
++    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
++    name VARCHAR(255) NOT NULL UNIQUE,
+     created_at TIMESTAMP
+ );
+ 
+ CREATE TABLE url_checks (
+-    id SERIAL PRIMARY KEY,
+-    url_id BIGINT NOT NULL,
++    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
++    url_id BIGINT NOT NULL REFERENCES urls(id),
+     status_code INTEGER,
+-    h1 TEXT,
+-    title TEXT,
++    h1 VARCHAR(255),
++    title VARCHAR(255),
+     description TEXT,
+-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+-    CONSTRAINT fk_url
+-      FOREIGN KEY(url_id)
+-      REFERENCES urls(id)
+-      ON DELETE CASCADE
+-);
+\ No newline at end of file
++    created_at TIMESTAMP
++);
++
